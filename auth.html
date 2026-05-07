@@ -138,7 +138,11 @@
         return
       }
 
-      window.location.href = 'index.html'
+      switchTab('login')
+      document.getElementById('login-email').value = email
+      showMsg('Account created! Check your email to verify, then sign in.', 'success')
+      btn.disabled = false
+      btn.textContent = 'Create Account'
     }
   </script>
 </body>
