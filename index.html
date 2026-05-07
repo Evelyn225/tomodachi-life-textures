@@ -40,6 +40,9 @@
     <div class="grid" id="grid"></div>
     <p class="empty" id="empty" style="display:none">No textures found.</p>
     <p class="empty" id="fetch-error" style="display:none">Failed to load textures. Please refresh the page.</p>
+    <div style="text-align:center;padding:24px 0 48px;display:none" id="load-more">
+      <button class="btn btn-secondary" id="load-more-btn">Load more</button>
+    </div>
   </div>
   <div class="toast" id="toast"></div>
 
@@ -51,6 +54,8 @@
     let currentCat = 'all'
     let currentSearch = ''
     let sessionIsAdmin = false
+    let visibleCount = 24
+    const PAGE_SIZE = 24
 
     let toastTimer = null
     function showToast(msg, type = '') {
@@ -112,15 +117,20 @@
 
       const grid = document.getElementById('grid')
       const empty = document.getElementById('empty')
+      const moreBtn = document.getElementById('load-more')
 
       if (!list.length) {
         grid.innerHTML = ''
         empty.style.display = ''
+        moreBtn.style.display = 'none'
         return
       }
       empty.style.display = 'none'
 
-      grid.innerHTML = list.map(t => {
+      const visible = list.slice(0, visibleCount)
+      moreBtn.style.display = list.length > visibleCount ? '' : 'none'
+
+      grid.innerHTML = visible.map(t => {
         const { data: { publicUrl } } = db.storage.from('textures').getPublicUrl(t.file_path)
         const username = t.profiles?.username || 'unknown'
         const count = t.download_count
@@ -130,9 +140,9 @@
           : ''
         return `
           <div class="card" id="card-${t.id}">
-            <img class="card-img" src="${publicUrl}" alt="${esc(t.title)}" loading="lazy">
+            <a href="texture.html?id=${t.id}"><img class="card-img" src="${publicUrl}" alt="${esc(t.title)}" loading="lazy"></a>
             <div class="card-body">
-              <div class="card-title">${esc(t.title)}</div>
+              <a class="card-title" href="texture.html?id=${t.id}" style="text-decoration:none;display:block">${esc(t.title)}</a>
               <span class="badge">${esc(badgeLabel)}</span>
               <div class="card-meta">
                 <a class="card-uploader" href="profile.html?user=${encodeURIComponent(username)}">${esc(username)}</a>
@@ -185,10 +195,16 @@
       }
     }
 
+    document.getElementById('load-more-btn').addEventListener('click', () => {
+      visibleCount += PAGE_SIZE
+      render()
+    })
+
     document.querySelectorAll('.sort-btn').forEach(btn => btn.addEventListener('click', () => {
       document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'))
       btn.classList.add('active')
       currentSort = btn.dataset.sort
+      visibleCount = PAGE_SIZE
       render()
     }))
 
@@ -196,6 +212,7 @@
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'))
       btn.classList.add('active')
       currentCat = btn.dataset.cat
+      visibleCount = PAGE_SIZE
       render()
     }))
 
@@ -230,6 +247,7 @@
       clearTimeout(searchTimer)
       searchTimer = setTimeout(() => {
         currentSearch = e.target.value.trim().toLowerCase()
+        visibleCount = PAGE_SIZE
         render()
       }, 200)
     })

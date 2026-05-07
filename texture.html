@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>Texture — Tomodachi Life Textures</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .texture-page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 40px 24px 64px;
+    }
+    .texture-img-wrap {
+      background: #1a1c24;
+      border: 1px solid #282c3a;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      margin-bottom: 28px;
+    }
+    .texture-img {
+      max-width: 100%;
+      max-height: 420px;
+      object-fit: contain;
+      image-rendering: pixelated;
+      border-radius: 4px;
+    }
+    .texture-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #d8dae8;
+      margin-bottom: 10px;
+    }
+    .texture-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+      font-size: 0.88rem;
+      color: #7a7d9a;
+    }
+    .texture-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <a href="index.html" class="brand">Tomodachi Life Textures</a>
+    <nav class="nav" id="nav"></nav>
+  </header>
+
+  <div class="texture-page">
+    <div id="loading" class="loading-state"><div class="spinner"></div>Loading…</div>
+    <p class="empty" id="not-found" style="display:none">Texture not found.</p>
+
+    <div id="content" style="display:none">
+      <div class="texture-img-wrap">
+        <img id="tex-img" class="texture-img" alt="">
+      </div>
+      <div class="texture-title" id="tex-title"></div>
+      <div class="texture-meta">
+        <span id="tex-badge" class="badge"></span>
+        <span>by <a id="tex-uploader" class="card-uploader" href="#"></a></span>
+        <span id="tex-downloads"></span>
+      </div>
+      <div class="texture-actions">
+        <button class="btn btn-primary" id="dl-btn">Download</button>
+        <button class="btn btn-danger" id="del-btn" style="display:none">Delete</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    function esc(str) {
+      const d = document.createElement('div')
+      d.textContent = str
+      return d.innerHTML
+    }
+
+    let toastTimer = null
+    function showToast(msg, type = '') {
+      const el = document.getElementById('toast')
+      el.textContent = msg
+      el.className = 'toast' + (type ? ` toast-${type}` : '')
+      clearTimeout(toastTimer)
+      requestAnimationFrame(() => el.classList.add('show'))
+      toastTimer = setTimeout(() => el.classList.remove('show'), 3000)
+    }
+
+    const params = new URLSearchParams(window.location.search)
+    const textureId = params.get('id')
+
+    if (!textureId) window.location.href = 'index.html'
+
+    async function init() {
+      const { data: { session } } = await db.auth.getSession()
+
+      // Nav
+      const nav = document.getElementById('nav')
+      if (session) {
+        const { data: profile } = await db.from('profiles').select('username, is_admin').eq('id', session.user.id).single()
+        const username = profile?.username || ''
+        const isAdmin = profile?.is_admin || false
+        nav.innerHTML = `
+          <a href="index.html">Browse</a>
+          <a href="upload.html">Upload</a>
+          <a href="profile.html?user=${encodeURIComponent(username)}">${esc(username)}</a>
+          <button onclick="db.auth.signOut().then(() => window.location.href = 'index.html')">Logout</button>`
+
+        // Fetch texture
+        const { data: tex, error } = await db
+          .from('textures')
+          .select('id, title, category, item_type, file_path, download_count, user_id, profiles(username)')
+          .eq('id', textureId)
+          .single()
+
+        document.getElementById('loading').style.display = 'none'
+
+        if (error || !tex) { document.getElementById('not-found').style.display = ''; return }
+
+        render(tex, session.user.id, isAdmin)
+      } else {
+        nav.innerHTML = `<a href="auth.html">Login</a>`
+
+        const { data: tex, error } = await db
+          .from('textures')
+          .select('id, title, category, item_type, file_path, download_count, user_id, profiles(username)')
+          .eq('id', textureId)
+          .single()
+
+        document.getElementById('loading').style.display = 'none'
+
+        if (error || !tex) { document.getElementById('not-found').style.display = ''; return }
+
+        render(tex, null, false)
+      }
+    }
+
+    function render(tex, sessionUserId, isAdmin) {
+      const { data: { publicUrl } } = db.storage.from('textures').getPublicUrl(tex.file_path)
+      const username = tex.profiles?.username || 'unknown'
+      const badgeLabel = tex.item_type ? `${tex.category} — ${tex.item_type}` : tex.category
+      const count = tex.download_count
+
+      document.title = `${tex.title} — Tomodachi Life Textures`
+      document.getElementById('tex-img').src = publicUrl
+      document.getElementById('tex-img').alt = tex.title
+      document.getElementById('tex-title').textContent = tex.title
+      document.getElementById('tex-badge').textContent = badgeLabel
+      document.getElementById('tex-uploader').textContent = username
+      document.getElementById('tex-uploader').href = `profile.html?user=${encodeURIComponent(username)}`
+      document.getElementById('tex-downloads').textContent = `${count} download${count !== 1 ? 's' : ''}`
+      document.getElementById('content').style.display = ''
+
+      const dlBtn = document.getElementById('dl-btn')
+      dlBtn.addEventListener('click', async () => {
+        dlBtn.disabled = true
+        dlBtn.textContent = 'Downloading...'
+        try {
+          const res = await fetch(publicUrl)
+          if (!res.ok) throw new Error(`${res.status}`)
+          const blob = await res.blob()
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = `${tex.title}.png`
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          URL.revokeObjectURL(url)
+
+          await db.rpc('increment_download_count', { texture_id: tex.id })
+
+          const dlEl = document.getElementById('tex-downloads')
+          const next = count + 1
+          dlEl.textContent = `${next} download${next !== 1 ? 's' : ''}`
+        } catch (err) {
+          showToast('Download failed. Please try again.', 'error')
+        } finally {
+          dlBtn.disabled = false
+          dlBtn.textContent = 'Download'
+        }
+      })
+
+      const canDelete = isAdmin || sessionUserId === tex.user_id
+      if (canDelete) {
+        const delBtn = document.getElementById('del-btn')
+        delBtn.style.display = ''
+        delBtn.addEventListener('click', async () => {
+          if (!confirm('Delete this texture? This cannot be undone.')) return
+          delBtn.disabled = true
+          delBtn.textContent = 'Deleting...'
+          const { error: dbError } = await db.from('textures').delete().eq('id', tex.id)
+          if (dbError) { showToast(dbError.message, 'error'); delBtn.disabled = false; delBtn.textContent = 'Delete'; return }
+          await db.storage.from('textures').remove([tex.file_path])
+          window.location.href = 'index.html'
+        })
+      }
+    }
+
+    init()
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>

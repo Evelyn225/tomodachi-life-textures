@@ -71,7 +71,7 @@
       // Load target profile
       const { data: profile, error: profileError } = await db
         .from('profiles')
-        .select('id, username, created_at')
+        .select('id, username, created_at, is_banned')
         .eq('username', targetUsername)
         .maybeSingle()
 
@@ -93,11 +93,33 @@
       document.getElementById('profile-username').textContent = profile.username
       const joined = new Date(profile.created_at)
       const joinedStr = joined.toLocaleString('en-US', { month: 'long', year: 'numeric' })
-      document.getElementById('profile-joined').textContent = `Joined ${joinedStr}`
+      const bannedTag = profile.is_banned ? ' <span style="font-size:0.75rem;background:rgba(158,74,90,0.25);color:#e08090;border:1px solid #6e3040;border-radius:4px;padding:2px 8px;vertical-align:middle">Banned</span>' : ''
+      document.getElementById('profile-joined').innerHTML = `Joined ${joinedStr}${bannedTag}`
       document.getElementById('profile-header').style.display = ''
 
       const isOwn = session && session.user.id === profile.id
       const canDelete = isOwn || isAdmin
+
+      // Ban button (admin only, not on own profile)
+      if (isAdmin && !isOwn) {
+        const banBtn = document.createElement('button')
+        banBtn.className = 'btn btn-danger btn-sm'
+        banBtn.style.marginTop = '12px'
+        banBtn.textContent = profile.is_banned ? 'Unban User' : 'Ban User'
+        banBtn.addEventListener('click', async () => {
+          const newState = !profile.is_banned
+          banBtn.disabled = true
+          const { error } = await db.from('profiles').update({ is_banned: newState }).eq('id', profile.id)
+          if (error) { showToast(error.message, 'error'); banBtn.disabled = false; return }
+          profile.is_banned = newState
+          banBtn.textContent = newState ? 'Unban User' : 'Ban User'
+          banBtn.disabled = false
+          const bannedTagNew = newState ? ' <span style="font-size:0.75rem;background:rgba(158,74,90,0.25);color:#e08090;border:1px solid #6e3040;border-radius:4px;padding:2px 8px;vertical-align:middle">Banned</span>' : ''
+          document.getElementById('profile-joined').innerHTML = `Joined ${joinedStr}${bannedTagNew}`
+          showToast(newState ? 'User banned.' : 'User unbanned.', newState ? 'error' : 'success')
+        })
+        document.getElementById('profile-header').appendChild(banBtn)
+      }
 
       // Load textures
       const { data: textures, error: texturesError } = await db
@@ -131,9 +153,9 @@
           : ''
         return `
           <div class="card" id="card-${t.id}">
-            <img class="card-img" src="${publicUrl}" alt="${esc(t.title)}" loading="lazy">
+            <a href="texture.html?id=${t.id}"><img class="card-img" src="${publicUrl}" alt="${esc(t.title)}" loading="lazy"></a>
             <div class="card-body">
-              <div class="card-title">${esc(t.title)}</div>
+              <a class="card-title" href="texture.html?id=${t.id}" style="text-decoration:none;display:block">${esc(t.title)}</a>
               <span class="badge">${esc(badgeLabel)}</span>
               <div class="card-meta">${count} download${count !== 1 ? 's' : ''}</div>
               ${deleteBtn}
