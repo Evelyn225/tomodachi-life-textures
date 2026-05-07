@@ -349,10 +349,58 @@ textarea.form-input { resize: vertical; min-height: 80px; }
   margin-bottom: 6px;
 }
 
+/* ── Loading state ── */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 60px 0;
+  color: #7a7d9a;
+  font-size: 0.92rem;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #282c3a;
+  border-top-color: #a899e0;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
 /* ── Empty state ── */
 .empty {
   text-align: center;
   padding: 60px 0;
   color: #7a7d9a;
   font-size: 0.95rem;
+}
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: #1a1c24;
+  border: 1px solid #282c3a;
+  color: #d8dae8;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 999;
+  white-space: nowrap;
+}
+
+.toast.toast-error { border-color: #6e3040; color: #e08090; }
+.toast.toast-success { border-color: #2e5e44; color: #6bbf99; }
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }

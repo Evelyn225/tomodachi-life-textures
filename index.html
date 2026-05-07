@@ -33,9 +33,12 @@
         <button class="filter-btn" data-cat="goods">Goods</button>
       </div>
     </div>
+    <div id="loading" class="loading-state"><div class="spinner"></div>Loading textures…</div>
     <div class="grid" id="grid"></div>
     <p class="empty" id="empty" style="display:none">No textures found.</p>
+    <p class="empty" id="fetch-error" style="display:none">Failed to load textures. Please refresh the page.</p>
   </div>
+  <div class="toast" id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
@@ -44,6 +47,16 @@
     let currentSort = 'newest'
     let currentCat = 'all'
     let sessionIsAdmin = false
+
+    let toastTimer = null
+    function showToast(msg, type = '') {
+      const el = document.getElementById('toast')
+      el.textContent = msg
+      el.className = 'toast' + (type ? ` toast-${type}` : '')
+      clearTimeout(toastTimer)
+      requestAnimationFrame(() => el.classList.add('show'))
+      toastTimer = setTimeout(() => el.classList.remove('show'), 3000)
+    }
 
     function esc(str) {
       const d = document.createElement('div')
@@ -72,10 +85,16 @@
     }
 
     async function loadTextures() {
+      document.getElementById('loading').style.display = ''
       const { data, error } = await db
         .from('textures')
         .select('id, title, category, item_type, file_path, download_count, created_at, profiles(username)')
-      if (error) { console.error(error); return }
+      document.getElementById('loading').style.display = 'none'
+      if (error) {
+        console.error(error)
+        document.getElementById('fetch-error').style.display = ''
+        return
+      }
       allTextures = data || []
       render()
     }
@@ -154,7 +173,7 @@
         }
       } catch (err) {
         console.error('Download error:', err)
-        alert('Download failed. Please try again.')
+        showToast('Download failed. Please try again.', 'error')
       } finally {
         btn.disabled = false
         btn.textContent = 'Download'
@@ -188,7 +207,7 @@
       delBtn.textContent = 'Deleting...'
 
       const { error: dbError } = await db.from('textures').delete().eq('id', id)
-      if (dbError) { alert(dbError.message); delBtn.disabled = false; delBtn.textContent = 'Delete'; return }
+      if (dbError) { showToast(dbError.message, 'error'); delBtn.disabled = false; delBtn.textContent = 'Delete'; return }
 
       await db.storage.from('textures').remove([path])
 
