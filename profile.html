@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile — Tomodachi Life Textures</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <a href="index.html" class="brand">Tomodachi Life Textures</a>
+    <nav class="nav" id="nav"></nav>
+  </header>
+
+  <div class="container">
+    <div class="profile-header" id="profile-header" style="display:none">
+      <div class="profile-username" id="profile-username"></div>
+      <div class="profile-joined" id="profile-joined"></div>
+    </div>
+    <p class="empty" id="not-found" style="display:none">User not found.</p>
+    <div class="grid" id="grid"></div>
+    <p class="empty" id="empty" style="display:none">No textures uploaded yet.</p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    function esc(str) {
+      const d = document.createElement('div')
+      d.textContent = str
+      return d.innerHTML
+    }
+
+    const params = new URLSearchParams(window.location.search)
+    const targetUsername = params.get('user')
+
+    if (!targetUsername) {
+      window.location.href = 'index.html'
+    }
+
+    async function init() {
+      const { data: { session } } = await db.auth.getSession()
+
+      // Build nav
+      const nav = document.getElementById('nav')
+      if (session) {
+        const { data: sessionProfile } = await db.from('profiles').select('username').eq('id', session.user.id).single()
+        const sessionUsername = sessionProfile?.username || ''
+        nav.innerHTML = `
+          <a href="index.html">Browse</a>
+          <a href="upload.html">Upload</a>
+          <a href="profile.html?user=${encodeURIComponent(sessionUsername)}">${esc(sessionUsername)}</a>
+          <button onclick="db.auth.signOut().then(() => window.location.href = 'index.html')">Logout</button>`
+      } else {
+        nav.innerHTML = `<a href="auth.html">Login</a>`
+      }
+
+      // Load target profile
+      const { data: profile, error: profileError } = await db
+        .from('profiles')
+        .select('id, username, created_at')
+        .eq('username', targetUsername)
+        .maybeSingle()
+
+      if (profileError) {
+        console.error(profileError)
+        document.getElementById('not-found').style.display = ''
+        return
+      }
+
+      if (!profile) {
+        document.getElementById('not-found').style.display = ''
+        return
+      }
+
+      // Update title
+      document.title = `${profile.username} — Tomodachi Life Textures`
+
+      // Show profile header
+      document.getElementById('profile-username').textContent = profile.username
+      const joined = new Date(profile.created_at)
+      const joinedStr = joined.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+      document.getElementById('profile-joined').textContent = `Joined ${joinedStr}`
+      document.getElementById('profile-header').style.display = ''
+
+      // Determine if viewing own profile
+      const isOwn = session && session.user.id === profile.id
+
+      // Load textures
+      const { data: textures, error: texturesError } = await db
+        .from('textures')
+        .select('id, title, category, item_type, file_path, download_count, created_at')
+        .eq('user_id', profile.id)
+        .order('created_at', { ascending: false })
+
+      if (texturesError) {
+        console.error(texturesError)
+        document.getElementById('empty').style.display = ''
+        return
+      }
+
+      const list = textures || []
+
+      if (!list.length) {
+        document.getElementById('empty').style.display = ''
+        return
+      }
+
+      const grid = document.getElementById('grid')
+      grid.innerHTML = list.map(t => {
+        const { data: { publicUrl } } = db.storage.from('textures').getPublicUrl(t.file_path)
+        const count = t.download_count
+        const badgeLabel = (t.category === 'goods' && t.item_type)
+          ? `goods — ${t.item_type}`
+          : t.category
+        const deleteBtn = isOwn
+          ? `<button class="btn btn-danger btn-sm del-btn" data-id="${t.id}" data-path="${t.file_path}">Delete</button>`
+          : ''
+        return `
+          <div class="card" id="card-${t.id}">
+            <img class="card-img" src="${publicUrl}" alt="${esc(t.title)}" loading="lazy">
+            <div class="card-body">
+              <div class="card-title">${esc(t.title)}</div>
+              <span class="badge">${esc(badgeLabel)}</span>
+              <div class="card-meta">${count} download${count !== 1 ? 's' : ''}</div>
+              ${deleteBtn}
+            </div>
+          </div>`
+      }).join('')
+
+      // Delete handling
+      grid.addEventListener('click', async e => {
+        const btn = e.target.closest('.del-btn')
+        if (!btn) return
+
+        if (!confirm('Delete this texture? This cannot be undone.')) return
+
+        const id = btn.dataset.id
+        const path = btn.dataset.path
+
+        btn.disabled = true
+        btn.textContent = 'Deleting...'
+
+        const { error: dbError } = await db.from('textures').delete().eq('id', id)
+        if (dbError) {
+          alert(dbError.message)
+          btn.disabled = false
+          btn.textContent = 'Delete'
+          return
+        }
+
+        await db.storage.from('textures').remove([path])
+
+        const card = document.getElementById(`card-${id}`)
+        if (card) card.remove()
+
+        if (!grid.children.length) {
+          grid.innerHTML = ''
+          document.getElementById('empty').style.display = ''
+        }
+      })
+    }
+
+    init()
+  </script>
+</body>
+</html>
