@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tomodachi Life Textures</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <a href="index.html" class="brand">Tomodachi Life Textures</a>
+    <nav class="nav" id="nav"></nav>
+  </header>
+
+  <div class="container">
+    <div class="controls">
+      <div class="controls-group">
+        <span class="controls-label">Sort</span>
+        <button class="sort-btn active" data-sort="newest">Newest</button>
+        <button class="sort-btn" data-sort="popular">Most Downloaded</button>
+      </div>
+      <div class="controls-group">
+        <span class="controls-label">Category</span>
+        <button class="filter-btn active" data-cat="all">All</button>
+        <button class="filter-btn" data-cat="face paint">Face Paint</button>
+        <button class="filter-btn" data-cat="food">Food</button>
+        <button class="filter-btn" data-cat="goods">Goods</button>
+        <button class="filter-btn" data-cat="apparel">Apparel</button>
+        <button class="filter-btn" data-cat="wallpaper">Wallpaper</button>
+        <button class="filter-btn" data-cat="flooring">Flooring</button>
+        <button class="filter-btn" data-cat="ground textures">Ground Textures</button>
+        <button class="filter-btn" data-cat="environment objects">Environment Objects</button>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <p class="empty" id="empty" style="display:none">No textures found.</p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    let allTextures = []
+    let currentSort = 'newest'
+    let currentCat = 'all'
+
+    function esc(str) {
+      const d = document.createElement('div')
+      d.textContent = str
+      return d.innerHTML
+    }
+
+    async function buildNav() {
+      const { data: { session } } = await db.auth.getSession()
+      const nav = document.getElementById('nav')
+      if (session) {
+        const { data: profile } = await db.from('profiles').select('username').eq('id', session.user.id).single()
+        const username = profile?.username || ''
+        nav.innerHTML = `
+          <a href="upload.html">Upload</a>
+          <a href="profile.html?user=${encodeURIComponent(username)}">${esc(username)}</a>
+          <button id="logout-btn">Logout</button>`
+        document.getElementById('logout-btn').onclick = async () => {
+          await db.auth.signOut()
+          window.location.reload()
+        }
+      } else {
+        nav.innerHTML = `<a href="auth.html">Login</a>`
+      }
+    }
+
+    async function loadTextures() {
+      const { data, error } = await db
+        .from('textures')
+        .select('id, title, category, item_type, file_path, download_count, created_at, profiles(username)')
+      if (error) { console.error(error); return }
+      allTextures = data || []
+      render()
+    }
+
+    function render() {
+      let list = [...allTextures]
+      if (currentCat !== 'all') list = list.filter(t => t.category === currentCat)
+      if (currentSort === 'newest') list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      else list.sort((a, b) => b.download_count - a.download_count)
+
+      const grid = document.getElementById('grid')
+      const empty = document.getElementById('empty')
+
+      if (!list.length) {
+        grid.innerHTML = ''
+        empty.style.display = ''
+        return
+      }
+      empty.style.display = 'none'
+
+      grid.innerHTML = list.map(t => {
+        const { data: { publicUrl } } = db.storage.from('textures').getPublicUrl(t.file_path)
+        const username = t.profiles?.username || 'unknown'
+        const count = t.download_count
+        const badgeLabel = t.item_type ? `${t.category} — ${t.item_type}` : t.category
+        return `
+          <div class="card">
+            <img class="card-img" src="${publicUrl}" alt="${esc(t.title)}" loading="lazy">
+            <div class="card-body">
+              <div class="card-title">${esc(t.title)}</div>
+              <span class="badge">${esc(badgeLabel)}</span>
+              <div class="card-meta">
+                <a class="card-uploader" href="profile.html?user=${encodeURIComponent(username)}">${esc(username)}</a>
+                <span class="dl-count" data-id="${t.id}">${count} download${count !== 1 ? 's' : ''}</span>
+              </div>
+              <button class="btn btn-primary btn-sm dl-btn"
+                data-id="${t.id}"
+                data-path="${esc(t.file_path)}"
+                data-title="${esc(t.title)}">Download</button>
+            </div>
+          </div>`
+      }).join('')
+    }
+
+    async function handleDownload(btn) {
+      btn.disabled = true
+      btn.textContent = 'Downloading...'
+      const { id, path, title } = btn.dataset
+
+      const { data: { publicUrl } } = db.storage.from('textures').getPublicUrl(path)
+      const res = await fetch(publicUrl)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${title}.png`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+
+      await db.rpc('increment_download_count', { texture_id: id })
+
+      const countEl = document.querySelector(`.dl-count[data-id="${id}"]`)
+      if (countEl) {
+        const n = parseInt(countEl.textContent) + 1
+        countEl.textContent = `${n} download${n !== 1 ? 's' : ''}`
+      }
+
+      btn.disabled = false
+      btn.textContent = 'Download'
+    }
+
+    document.querySelectorAll('.sort-btn').forEach(btn => btn.addEventListener('click', () => {
+      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'))
+      btn.classList.add('active')
+      currentSort = btn.dataset.sort
+      render()
+    }))
+
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'))
+      btn.classList.add('active')
+      currentCat = btn.dataset.cat
+      render()
+    }))
+
+    document.getElementById('grid').addEventListener('click', e => {
+      const btn = e.target.closest('.dl-btn')
+      if (btn) handleDownload(btn)
+    })
+
+    buildNav()
+    loadTextures()
+  </script>
+</body>
+</html>
