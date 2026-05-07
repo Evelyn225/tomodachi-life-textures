@@ -73,6 +73,7 @@
       </div>
       <div class="texture-actions">
         <button class="btn btn-primary" id="dl-btn">Download</button>
+        <button class="btn btn-secondary" id="share-btn">Share</button>
         <button class="btn btn-danger" id="del-btn" style="display:none">Delete</button>
       </div>
     </div>
@@ -191,6 +192,12 @@
           dlBtn.disabled = false
           dlBtn.textContent = 'Download'
         }
+      })
+
+      document.getElementById('share-btn').addEventListener('click', async () => {
+        const url = `${location.origin}/texture.html?id=${tex.id}`
+        await navigator.clipboard.writeText(url)
+        showToast('Link copied!', 'success')
       })
 
       const canDelete = isAdmin || sessionUserId === tex.user_id

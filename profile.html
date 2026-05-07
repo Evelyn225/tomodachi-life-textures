@@ -158,13 +158,24 @@
               <a class="card-title" href="texture.html?id=${t.id}" style="text-decoration:none;display:block">${esc(t.title)}</a>
               <span class="badge">${esc(badgeLabel)}</span>
               <div class="card-meta">${count} download${count !== 1 ? 's' : ''}</div>
-              ${deleteBtn}
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-secondary btn-sm share-btn" data-id="${t.id}" style="flex:1">Share</button>
+                ${deleteBtn}
+              </div>
             </div>
           </div>`
       }).join('')
 
-      // Delete handling
+      // Share + Delete handling
       grid.addEventListener('click', async e => {
+        const shareBtn = e.target.closest('.share-btn')
+        if (shareBtn) {
+          const url = `${location.origin}/texture.html?id=${shareBtn.dataset.id}`
+          await navigator.clipboard.writeText(url)
+          showToast('Link copied!', 'success')
+          return
+        }
+
         const btn = e.target.closest('.del-btn')
         if (!btn) return
 
