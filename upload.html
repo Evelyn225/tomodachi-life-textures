@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload Texture — Tomodachi Life Textures</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <a href="index.html" class="brand">Tomodachi Life Textures</a>
+    <nav class="nav" id="nav"></nav>
+  </header>
+
+  <div class="form-page">
+    <div class="form-card">
+      <div class="form-title">Upload Texture</div>
+      <div id="msg" class="msg"></div>
+
+      <form id="upload-form" onsubmit="handleUpload(event)">
+        <div class="form-group">
+          <label class="form-label">Texture title</label>
+          <input class="form-input" type="text" id="title" required maxlength="80" placeholder="e.g. Cherry Blossom Wallpaper">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-select" id="category" required onchange="onCategoryChange()">
+            <option value="" disabled selected>Select a category</option>
+            <option value="face paint">Face Paint</option>
+            <option value="food">Food</option>
+            <option value="goods">Goods</option>
+            <option value="apparel">Apparel</option>
+            <option value="wallpaper">Wallpaper</option>
+            <option value="flooring">Flooring</option>
+            <option value="ground textures">Ground Textures</option>
+            <option value="environment objects">Environment Objects</option>
+          </select>
+        </div>
+        <div class="form-group" id="goods-type-group" style="display:none">
+          <label class="form-label">Goods type</label>
+          <select class="form-select" id="goods-type" onchange="onGoodsTypeChange()">
+            <option value="">Other goods</option>
+            <option value="book">Book (185 × 258)</option>
+            <option value="game">Game (256 × 144)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">PNG file</label>
+          <p id="dimension-hint" style="font-size:0.82rem;color:#aaa;margin-bottom:6px;">Select a category to see required dimensions</p>
+          <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()">
+            <img id="preview" class="upload-preview" style="display:none" alt="preview">
+            <p id="upload-hint">Click to select a PNG file</p>
+          </div>
+          <input type="file" id="file-input" accept=".png,image/png" style="display:none">
+        </div>
+        <button class="btn btn-primary btn-full" type="submit" id="submit-btn" disabled>Upload</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    let currentUser = null
+    let validFile = null
+
+    const DIMENSIONS = {
+      book:    { w: 185, h: 258 },
+      game:    { w: 256, h: 144 },
+      default: { w: 256, h: 256 }
+    }
+
+    function getExpectedDimensions() {
+      const cat = document.getElementById('category').value
+      const goodsType = document.getElementById('goods-type').value
+      if (cat === 'goods' && goodsType === 'book') return DIMENSIONS.book
+      if (cat === 'goods' && goodsType === 'game') return DIMENSIONS.game
+      return DIMENSIONS.default
+    }
+
+    function getDimensionHintText() {
+      const dim = getExpectedDimensions()
+      const cat = document.getElementById('category').value
+      if (!cat) return 'Select a category to see required dimensions'
+      return `Required: ${dim.w} × ${dim.h} px`
+    }
+
+    function onCategoryChange() {
+      const cat = document.getElementById('category').value
+      const goodsGroup = document.getElementById('goods-type-group')
+      goodsGroup.style.display = cat === 'goods' ? '' : 'none'
+      if (cat !== 'goods') document.getElementById('goods-type').value = ''
+      updateDimensionHint()
+      clearFileSelection()
+    }
+
+    function onGoodsTypeChange() {
+      updateDimensionHint()
+      clearFileSelection()
+    }
+
+    function updateDimensionHint() {
+      document.getElementById('dimension-hint').textContent = getDimensionHintText()
+    }
+
+    function clearFileSelection() {
+      validFile = null
+      document.getElementById('submit-btn').disabled = true
+      document.getElementById('preview').style.display = 'none'
+      document.getElementById('upload-hint').style.display = ''
+      document.getElementById('file-input').value = ''
+      showMsg('', '')
+    }
+
+    async function init() {
+      const { data: { session } } = await db.auth.getSession()
+      if (!session) { window.location.href = 'auth.html'; return }
+      currentUser = session.user
+
+      const { data: profile } = await db.from('profiles').select('username').eq('id', session.user.id).single()
+      const username = profile?.username || ''
+      document.getElementById('nav').innerHTML = `
+        <a href="index.html">Browse</a>
+        <a href="profile.html?user=${encodeURIComponent(username)}">${username}</a>
+        <button onclick="db.auth.signOut().then(() => window.location.href = 'index.html')">Logout</button>`
+    }
+
+    function showMsg(text, type) {
+      const el = document.getElementById('msg')
+      el.textContent = text
+      el.className = 'msg' + (type ? ` msg-${type}` : '')
+      el.style.display = text ? '' : 'none'
+    }
+
+    document.getElementById('file-input').addEventListener('change', e => {
+      const file = e.target.files[0]
+      if (!file) return
+      validFile = null
+      document.getElementById('submit-btn').disabled = true
+      showMsg('', '')
+
+      if (file.type !== 'image/png') {
+        showMsg('File must be a PNG image.', 'error')
+        return
+      }
+
+      const expected = getExpectedDimensions()
+      const objectUrl = URL.createObjectURL(file)
+      const img = new Image()
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl)
+        if (img.width !== expected.w || img.height !== expected.h) {
+          showMsg(`Image must be ${expected.w}×${expected.h} px. Yours is ${img.width}×${img.height}.`, 'error')
+          return
+        }
+        validFile = file
+        document.getElementById('submit-btn').disabled = false
+        showMsg('', '')
+      }
+      img.onerror = () => { URL.revokeObjectURL(objectUrl); showMsg('Could not read image.', 'error') }
+      img.src = objectUrl
+
+      const reader = new FileReader()
+      reader.onload = ev => {
+        const preview = document.getElementById('preview')
+        preview.src = ev.target.result
+        preview.style.display = ''
+        document.getElementById('upload-hint').style.display = 'none'
+      }
+      reader.readAsDataURL(file)
+    })
+
+    async function handleUpload(e) {
+      e.preventDefault()
+      if (!validFile) return
+
+      const btn = document.getElementById('submit-btn')
+      btn.disabled = true
+      btn.textContent = 'Uploading...'
+      showMsg('', '')
+
+      const title = document.getElementById('title').value.trim()
+      const category = document.getElementById('category').value
+      const goodsType = document.getElementById('goods-type').value
+      const itemType = (category === 'goods' && goodsType) ? goodsType : null
+      const textureId = crypto.randomUUID()
+      const filePath = `${currentUser.id}/${textureId}.png`
+
+      try {
+        const { error: uploadError } = await db.storage.from('textures').upload(filePath, validFile)
+        if (uploadError) throw new Error(uploadError.message)
+
+        const { error: insertError } = await db.from('textures').insert({
+          id: textureId,
+          user_id: currentUser.id,
+          title,
+          category,
+          item_type: itemType,
+          file_path: filePath
+        })
+        if (insertError) {
+          await db.storage.from('textures').remove([filePath])
+          throw new Error(insertError.message)
+        }
+
+        document.getElementById('upload-form').reset()
+        validFile = null
+        document.getElementById('preview').style.display = 'none'
+        document.getElementById('upload-hint').style.display = ''
+        document.getElementById('goods-type-group').style.display = 'none'
+        document.getElementById('dimension-hint').textContent = 'Select a category to see required dimensions'
+        showMsg('Texture uploaded successfully!', 'success')
+        btn.disabled = true
+        btn.textContent = 'Upload'
+      } catch (err) {
+        showMsg(`Upload failed: ${err.message}`, 'error')
+        btn.disabled = false
+        btn.textContent = 'Upload'
+      }
+    }
+
+    init()
+  </script>
+</body>
+</html>
