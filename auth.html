@@ -111,7 +111,13 @@
       const password = document.getElementById('reg-password').value
 
       // Check username uniqueness
-      const { data: existing } = await db.from('profiles').select('id').eq('username', username).maybeSingle()
+      const { data: existing, error: checkError } = await db.from('profiles').select('id').eq('username', username).maybeSingle()
+      if (checkError) {
+        showMsg('Could not verify username availability. Please try again.', 'error')
+        btn.disabled = false
+        btn.textContent = 'Create Account'
+        return
+      }
       if (existing) {
         showMsg('Username already taken.', 'error')
         btn.disabled = false
@@ -122,6 +128,13 @@
       const { data, error } = await db.auth.signUp({ email, password })
       if (error) {
         showMsg(error.message, 'error')
+        btn.disabled = false
+        btn.textContent = 'Create Account'
+        return
+      }
+
+      if (!data.user) {
+        showMsg('Check your email to confirm your account before logging in.', 'error')
         btn.disabled = false
         btn.textContent = 'Create Account'
         return
