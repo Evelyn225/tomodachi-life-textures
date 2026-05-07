@@ -21,7 +21,10 @@
 
       <form id="upload-form" onsubmit="handleUpload(event)">
         <div class="form-group">
-          <label class="form-label" for="title">Texture title</label>
+          <label class="form-label" for="title" style="display:flex;justify-content:space-between;align-items:center">
+            Texture title
+            <span id="title-count" style="font-weight:400;color:#7a7d9a;font-size:0.78rem">0 / 80</span>
+          </label>
           <input class="form-input" type="text" id="title" required maxlength="80" placeholder="e.g. Yummy Cake">
         </div>
         <div class="form-group">
@@ -46,7 +49,7 @@
           <p id="dimension-hint" class="dimension-hint">Select a category to see required dimensions</p>
           <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()">
             <img id="preview" class="upload-preview" style="display:none" alt="preview">
-            <p id="upload-hint">Click to select a PNG file</p>
+            <p id="upload-hint">Click or drag a PNG file here</p>
           </div>
           <input type="file" id="file-input" accept=".png,image/png" style="display:none">
         </div>
@@ -137,6 +140,21 @@
       el.style.display = text ? '' : 'none'
     }
 
+    const uploadArea = document.getElementById('upload-area')
+    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.borderColor = '#a899e0' })
+    uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = '' })
+    uploadArea.addEventListener('drop', e => {
+      e.preventDefault()
+      uploadArea.style.borderColor = ''
+      const file = e.dataTransfer.files[0]
+      if (!file) return
+      const dt = new DataTransfer()
+      dt.items.add(file)
+      const input = document.getElementById('file-input')
+      input.files = dt.files
+      input.dispatchEvent(new Event('change'))
+    })
+
     document.getElementById('file-input').addEventListener('change', e => {
       const file = e.target.files[0]
       if (!file) return
@@ -224,6 +242,10 @@
         btn.textContent = 'Upload'
       }
     }
+
+    document.getElementById('title').addEventListener('input', e => {
+      document.getElementById('title-count').textContent = `${e.target.value.length} / 80`
+    })
 
     init()
   </script>

@@ -277,6 +277,23 @@ body {
 
 textarea.form-input { resize: vertical; min-height: 80px; }
 
+.input-wrap { position: relative; }
+.input-wrap .form-input { padding-right: 52px; }
+.show-pw {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #7a7d9a;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-family: inherit;
+  padding: 0;
+}
+.show-pw:hover { color: #a899e0; }
+
 .form-input:focus, .form-select:focus {
   outline: none;
   border-color: #a899e0;

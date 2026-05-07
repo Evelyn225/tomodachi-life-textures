@@ -22,10 +22,21 @@
     <div class="grid" id="grid"></div>
     <p class="empty" id="empty" style="display:none">No textures uploaded yet.</p>
   </div>
+  <div class="toast" id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script>
+    let toastTimer = null
+    function showToast(msg, type = '') {
+      const el = document.getElementById('toast')
+      el.textContent = msg
+      el.className = 'toast' + (type ? ` toast-${type}` : '')
+      clearTimeout(toastTimer)
+      requestAnimationFrame(() => el.classList.add('show'))
+      toastTimer = setTimeout(() => el.classList.remove('show'), 3000)
+    }
+
     function esc(str) {
       const d = document.createElement('div')
       d.textContent = str
@@ -145,7 +156,7 @@
 
         const { error: dbError } = await db.from('textures').delete().eq('id', id)
         if (dbError) {
-          alert(dbError.message)
+          showToast(dbError.message, 'error')
           btn.disabled = false
           btn.textContent = 'Delete'
           return
