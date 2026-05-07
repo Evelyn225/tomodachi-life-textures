@@ -35,7 +35,7 @@ body {
 }
 
 .nav a, .nav button {
-  color: #666880;
+  color: #8890a8;
   text-decoration: none;
   font-size: 0.9rem;
   background: none;
@@ -73,7 +73,7 @@ body {
 
 .controls-label {
   font-size: 0.8rem;
-  color: #4e5168;
+  color: #7a7d9a;
   margin-right: 4px;
 }
 
@@ -119,7 +119,7 @@ body {
 .card-img {
   width: 100%;
   aspect-ratio: 1;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
   background: #22252f;
   image-rendering: pixelated;
@@ -146,7 +146,7 @@ body {
   justify-content: space-between;
   align-items: center;
   font-size: 0.78rem;
-  color: #4e5168;
+  color: #7a7d9a;
 }
 
 .card-uploader {
@@ -183,6 +183,16 @@ body {
 
 .btn:hover { opacity: 0.85; }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn:focus-visible,
+.filter-btn:focus-visible,
+.sort-btn:focus-visible,
+.tab-btn:focus-visible,
+.nav a:focus-visible,
+.nav button:focus-visible {
+  outline: 2px solid #a899e0;
+  outline-offset: 2px;
+}
 
 .btn-primary   { background: #a899e0; color: #13141a; }
 .btn-secondary { background: transparent; color: #a899e0; border: 1px solid #a899e0; }
@@ -293,7 +303,7 @@ textarea.form-input { resize: vertical; min-height: 80px; }
 
 .upload-area:hover { border-color: #a899e0; }
 
-.upload-area p { color: #4e5168; font-size: 0.88rem; }
+.upload-area p { color: #7a7d9a; font-size: 0.88rem; }
 
 .upload-preview {
   width: 128px;
@@ -319,15 +329,22 @@ textarea.form-input { resize: vertical; min-height: 80px; }
 }
 
 .profile-joined {
-  color: #4e5168;
+  color: #7a7d9a;
   font-size: 0.82rem;
   margin-top: 4px;
+}
+
+/* ── Dimension hint ── */
+.dimension-hint {
+  font-size: 0.82rem;
+  color: #7a7d9a;
+  margin-bottom: 6px;
 }
 
 /* ── Empty state ── */
 .empty {
   text-align: center;
   padding: 60px 0;
-  color: #4e5168;
+  color: #7a7d9a;
   font-size: 0.95rem;
 }

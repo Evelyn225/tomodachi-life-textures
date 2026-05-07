@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
   <title>Upload Texture — Tomodachi Life Textures</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -19,11 +20,11 @@
 
       <form id="upload-form" onsubmit="handleUpload(event)">
         <div class="form-group">
-          <label class="form-label">Texture title</label>
+          <label class="form-label" for="title">Texture title</label>
           <input class="form-input" type="text" id="title" required maxlength="80" placeholder="e.g. Cherry Blossom Wallpaper">
         </div>
         <div class="form-group">
-          <label class="form-label">Category</label>
+          <label class="form-label" for="category">Category</label>
           <select class="form-select" id="category" required onchange="onCategoryChange()">
             <option value="" disabled selected>Select a category</option>
             <option value="face paint">Face Paint</option>
@@ -32,7 +33,7 @@
           </select>
         </div>
         <div class="form-group" id="goods-type-group" style="display:none">
-          <label class="form-label">Goods type</label>
+          <label class="form-label" for="goods-type">Goods type</label>
           <select class="form-select" id="goods-type" onchange="onGoodsTypeChange()">
             <option value="">Other goods</option>
             <option value="book">Book (185 × 258)</option>
@@ -40,8 +41,8 @@
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">PNG file</label>
-          <p id="dimension-hint" style="font-size:0.82rem;color:#aaa;margin-bottom:6px;">Select a category to see required dimensions</p>
+          <label class="form-label" for="file-input">PNG file</label>
+          <p id="dimension-hint" class="dimension-hint">Select a category to see required dimensions</p>
           <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()">
             <img id="preview" class="upload-preview" style="display:none" alt="preview">
             <p id="upload-hint">Click to select a PNG file</p>
@@ -58,6 +59,7 @@
   <script>
     let currentUser = null
     let validFile = null
+    let currentPreviewUrl = null
 
     function esc(str) {
       const d = document.createElement('div')
@@ -106,6 +108,7 @@
 
     function clearFileSelection() {
       validFile = null
+      if (currentPreviewUrl) { URL.revokeObjectURL(currentPreviewUrl); currentPreviewUrl = null }
       document.getElementById('submit-btn').disabled = true
       document.getElementById('preview').style.display = 'none'
       document.getElementById('upload-hint').style.display = ''
@@ -136,8 +139,12 @@
     document.getElementById('file-input').addEventListener('change', e => {
       const file = e.target.files[0]
       if (!file) return
+
+      if (currentPreviewUrl) { URL.revokeObjectURL(currentPreviewUrl); currentPreviewUrl = null }
       validFile = null
       document.getElementById('submit-btn').disabled = true
+      document.getElementById('preview').style.display = 'none'
+      document.getElementById('upload-hint').style.display = ''
       showMsg('', '')
 
       if (file.type !== 'image/png') {
@@ -149,26 +156,22 @@
       const objectUrl = URL.createObjectURL(file)
       const img = new Image()
       img.onload = () => {
-        URL.revokeObjectURL(objectUrl)
         if (img.width !== expected.w || img.height !== expected.h) {
+          URL.revokeObjectURL(objectUrl)
           showMsg(`Image must be ${expected.w}×${expected.h} px. Yours is ${img.width}×${img.height}.`, 'error')
           return
         }
         validFile = file
+        currentPreviewUrl = objectUrl
         document.getElementById('submit-btn').disabled = false
         showMsg('', '')
-      }
-      img.onerror = () => { URL.revokeObjectURL(objectUrl); showMsg('Could not read image.', 'error') }
-      img.src = objectUrl
-
-      const reader = new FileReader()
-      reader.onload = ev => {
         const preview = document.getElementById('preview')
-        preview.src = ev.target.result
+        preview.src = objectUrl
         preview.style.display = ''
         document.getElementById('upload-hint').style.display = 'none'
       }
-      reader.readAsDataURL(file)
+      img.onerror = () => { URL.revokeObjectURL(objectUrl); showMsg('Could not read image.', 'error') }
+      img.src = objectUrl
     })
 
     async function handleUpload(e) {
@@ -206,6 +209,7 @@
 
         document.getElementById('upload-form').reset()
         validFile = null
+        if (currentPreviewUrl) { URL.revokeObjectURL(currentPreviewUrl); currentPreviewUrl = null }
         document.getElementById('preview').style.display = 'none'
         document.getElementById('upload-hint').style.display = ''
         document.getElementById('goods-type-group').style.display = 'none'

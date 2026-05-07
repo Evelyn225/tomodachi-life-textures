@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
   <title>Sign In — Tomodachi Life Textures</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -26,11 +27,11 @@
       <!-- Login form -->
       <form id="form-login" onsubmit="handleLogin(event)">
         <div class="form-group">
-          <label class="form-label">Email</label>
+          <label class="form-label" for="login-email">Email</label>
           <input class="form-input" type="email" id="login-email" required autocomplete="email">
         </div>
         <div class="form-group">
-          <label class="form-label">Password</label>
+          <label class="form-label" for="login-password">Password</label>
           <input class="form-input" type="password" id="login-password" required autocomplete="current-password">
         </div>
         <button class="btn btn-primary btn-full" type="submit" id="login-btn">Login</button>
@@ -39,16 +40,16 @@
       <!-- Register form -->
       <form id="form-register" style="display:none" onsubmit="handleRegister(event)">
         <div class="form-group">
-          <label class="form-label">Username</label>
+          <label class="form-label" for="reg-username">Username</label>
           <input class="form-input" type="text" id="reg-username" required autocomplete="username"
                  pattern="[a-zA-Z0-9_]{3,20}" title="3-20 characters, letters, numbers, underscores">
         </div>
         <div class="form-group">
-          <label class="form-label">Email</label>
+          <label class="form-label" for="reg-email">Email</label>
           <input class="form-input" type="email" id="reg-email" required autocomplete="email">
         </div>
         <div class="form-group">
-          <label class="form-label">Password</label>
+          <label class="form-label" for="reg-password">Password</label>
           <input class="form-input" type="password" id="reg-password" required autocomplete="new-password" minlength="8">
         </div>
         <button class="btn btn-primary btn-full" type="submit" id="register-btn">Create Account</button>
