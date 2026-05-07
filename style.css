@@ -1,6 +1,6 @@
 @font-face {
-  font-family: 'Tomodachy';
-  src: url('Tomodachy.otf') format('opentype');
+  font-family: 'DreamLife';
+  src: url('DreamLife-V1.0.0_by_MaxiGamer.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
 }
@@ -29,7 +29,7 @@ body {
 }
 
 .brand {
-  font-family: 'Tomodachy', sans-serif;
+  font-family: 'DreamLife', sans-serif;
   font-size: 1.3rem;
   font-weight: normal;
   color: #a899e0;
