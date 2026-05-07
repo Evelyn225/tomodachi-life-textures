@@ -79,6 +79,15 @@
     </div>
   </div>
   <div class="toast" id="toast"></div>
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-msg" id="modal-msg"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary btn-sm" id="modal-cancel-btn">Cancel</button>
+        <button class="btn btn-danger btn-sm" id="modal-confirm-btn">Delete</button>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
@@ -87,6 +96,33 @@
       const d = document.createElement('div')
       d.textContent = str
       return d.innerHTML
+    }
+
+    function confirmModal(message, confirmLabel = 'Delete') {
+      return new Promise(resolve => {
+        const overlay = document.getElementById('modal-overlay')
+        document.getElementById('modal-msg').textContent = message
+        document.getElementById('modal-confirm-btn').textContent = confirmLabel
+        overlay.classList.add('show')
+        function finish(result) {
+          overlay.classList.remove('show')
+          confirmBtn.removeEventListener('click', onConfirm)
+          cancelBtn.removeEventListener('click', onCancel)
+          overlay.removeEventListener('click', onOverlay)
+          document.removeEventListener('keydown', onKey)
+          resolve(result)
+        }
+        const confirmBtn = document.getElementById('modal-confirm-btn')
+        const cancelBtn = document.getElementById('modal-cancel-btn')
+        function onConfirm() { finish(true) }
+        function onCancel() { finish(false) }
+        function onOverlay(e) { if (e.target === overlay) finish(false) }
+        function onKey(e) { if (e.key === 'Escape') finish(false) }
+        confirmBtn.addEventListener('click', onConfirm)
+        cancelBtn.addEventListener('click', onCancel)
+        overlay.addEventListener('click', onOverlay)
+        document.addEventListener('keydown', onKey)
+      })
     }
 
     let toastTimer = null
@@ -205,7 +241,7 @@
         const delBtn = document.getElementById('del-btn')
         delBtn.style.display = ''
         delBtn.addEventListener('click', async () => {
-          if (!confirm('Delete this texture? This cannot be undone.')) return
+          if (!await confirmModal('Delete this texture? This cannot be undone.')) return
           delBtn.disabled = true
           delBtn.textContent = 'Deleting...'
           const { error: dbError } = await db.from('textures').delete().eq('id', tex.id)

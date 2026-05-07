@@ -422,6 +422,51 @@ textarea.form-input { resize: vertical; min-height: 80px; }
   font-size: 0.95rem;
 }
 
+/* ── Modal ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal {
+  background: #1a1c24;
+  border: 1px solid #282c3a;
+  border-radius: 12px;
+  padding: 28px;
+  max-width: 380px;
+  width: calc(100% - 48px);
+  transform: scale(0.95);
+  transition: transform 0.15s;
+}
+
+.modal-overlay.show .modal { transform: scale(1); }
+
+.modal-msg {
+  color: #d8dae8;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin-bottom: 22px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
 /* ── Toast ── */
 .toast {
   position: fixed;
