@@ -30,10 +30,6 @@
             <option value="food">Food</option>
             <option value="goods">Goods</option>
             <option value="apparel">Apparel</option>
-            <option value="wallpaper">Wallpaper</option>
-            <option value="flooring">Flooring</option>
-            <option value="ground textures">Ground Textures</option>
-            <option value="environment objects">Environment Objects</option>
           </select>
         </div>
         <div class="form-group" id="goods-type-group" style="display:none">
@@ -63,6 +59,12 @@
   <script>
     let currentUser = null
     let validFile = null
+
+    function esc(str) {
+      const d = document.createElement('div')
+      d.textContent = str
+      return d.innerHTML
+    }
 
     const DIMENSIONS = {
       book:    { w: 185, h: 258 },
@@ -121,7 +123,7 @@
       const username = profile?.username || ''
       document.getElementById('nav').innerHTML = `
         <a href="index.html">Browse</a>
-        <a href="profile.html?user=${encodeURIComponent(username)}">${username}</a>
+        <a href="profile.html?user=${encodeURIComponent(username)}">${esc(username)}</a>
         <button onclick="db.auth.signOut().then(() => window.location.href = 'index.html')">Logout</button>`
     }
 
