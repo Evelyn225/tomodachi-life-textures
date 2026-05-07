@@ -45,8 +45,9 @@
       // Build nav
       const nav = document.getElementById('nav')
       if (session) {
-        const { data: sessionProfile } = await db.from('profiles').select('username').eq('id', session.user.id).single()
+        const { data: sessionProfile } = await db.from('profiles').select('username, is_admin').eq('id', session.user.id).single()
         const sessionUsername = sessionProfile?.username || ''
+        const isAdmin = sessionProfile?.is_admin || false
         nav.innerHTML = `
           <a href="index.html">Browse</a>
           <a href="upload.html">Upload</a>
@@ -84,8 +85,8 @@
       document.getElementById('profile-joined').textContent = `Joined ${joinedStr}`
       document.getElementById('profile-header').style.display = ''
 
-      // Determine if viewing own profile
       const isOwn = session && session.user.id === profile.id
+      const canDelete = isOwn || isAdmin
 
       // Load textures
       const { data: textures, error: texturesError } = await db
@@ -114,7 +115,7 @@
         const badgeLabel = (t.category === 'goods' && t.item_type)
           ? `goods — ${t.item_type}`
           : t.category
-        const deleteBtn = isOwn
+        const deleteBtn = canDelete
           ? `<button class="btn btn-danger btn-sm del-btn" data-id="${t.id}" data-path="${t.file_path}">Delete</button>`
           : ''
         return `

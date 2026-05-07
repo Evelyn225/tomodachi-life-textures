@@ -38,6 +38,7 @@
     let allTextures = []
     let currentSort = 'newest'
     let currentCat = 'all'
+    let sessionIsAdmin = false
 
     function esc(str) {
       const d = document.createElement('div')
@@ -49,8 +50,9 @@
       const { data: { session } } = await db.auth.getSession()
       const nav = document.getElementById('nav')
       if (session) {
-        const { data: profile } = await db.from('profiles').select('username').eq('id', session.user.id).single()
+        const { data: profile } = await db.from('profiles').select('username, is_admin').eq('id', session.user.id).single()
         const username = profile?.username || ''
+        sessionIsAdmin = profile?.is_admin || false
         nav.innerHTML = `
           <a href="upload.html">Upload</a>
           <a href="profile.html?user=${encodeURIComponent(username)}">${esc(username)}</a>
@@ -94,8 +96,11 @@
         const username = t.profiles?.username || 'unknown'
         const count = t.download_count
         const badgeLabel = t.item_type ? `${t.category} — ${t.item_type}` : t.category
+        const deleteBtn = sessionIsAdmin
+          ? `<button class="btn btn-danger btn-sm del-btn" data-id="${t.id}" data-path="${t.file_path}">Delete</button>`
+          : ''
         return `
-          <div class="card">
+          <div class="card" id="card-${t.id}">
             <img class="card-img" src="${publicUrl}" alt="${esc(t.title)}" loading="lazy">
             <div class="card-body">
               <div class="card-title">${esc(t.title)}</div>
@@ -108,6 +113,7 @@
                 data-id="${t.id}"
                 data-path="${t.file_path}"
                 data-title="${esc(t.title)}">Download</button>
+              ${deleteBtn}
             </div>
           </div>`
       }).join('')
@@ -164,13 +170,33 @@
       render()
     }))
 
-    document.getElementById('grid').addEventListener('click', e => {
-      const btn = e.target.closest('.dl-btn')
-      if (btn) handleDownload(btn)
+    document.getElementById('grid').addEventListener('click', async e => {
+      const dlBtn = e.target.closest('.dl-btn')
+      if (dlBtn) { handleDownload(dlBtn); return }
+
+      const delBtn = e.target.closest('.del-btn')
+      if (!delBtn) return
+      if (!confirm('Delete this texture? This cannot be undone.')) return
+
+      const { id, path } = delBtn.dataset
+      delBtn.disabled = true
+      delBtn.textContent = 'Deleting...'
+
+      const { error: dbError } = await db.from('textures').delete().eq('id', id)
+      if (dbError) { alert(dbError.message); delBtn.disabled = false; delBtn.textContent = 'Delete'; return }
+
+      await db.storage.from('textures').remove([path])
+
+      const card = document.getElementById(`card-${id}`)
+      if (card) card.remove()
+      allTextures = allTextures.filter(t => t.id !== id)
+
+      if (!document.querySelector('.card')) {
+        document.getElementById('empty').style.display = ''
+      }
     })
 
-    buildNav()
-    loadTextures()
+    buildNav().then(loadTextures)
   </script>
 </body>
 </html>
