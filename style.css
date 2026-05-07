@@ -227,7 +227,7 @@ body {
   color: #555;
 }
 
-.form-input, .form-select {
+.form-input, .form-select, textarea.form-input {
   padding: 10px 14px;
   border: 1px solid #f0d0e0;
   border-radius: 8px;
@@ -237,6 +237,8 @@ body {
   background: #fff;
   width: 100%;
 }
+
+textarea.form-input { resize: vertical; min-height: 80px; }
 
 .form-input:focus, .form-select:focus {
   outline: none;
@@ -254,6 +256,7 @@ body {
 
 .msg-error   { background: #fce4ec; color: #c2185b; border: 1px solid #f48fb1; }
 .msg-success { background: #e8f5e9; color: #2e7d32; border: 1px solid #81c784; }
+.msg.show { display: block; }
 
 /* ── Tabs ── */
 .tabs {
