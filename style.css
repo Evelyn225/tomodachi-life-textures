@@ -108,6 +108,25 @@ body {
   color: #a899e0;
 }
 
+/* ── Search ── */
+.search-input {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid #282c3a;
+  background: #1a1c24;
+  color: #d8dae8;
+  font-size: 0.82rem;
+  font-family: inherit;
+  width: 200px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #a899e0;
+}
+
+.search-input::placeholder { color: #7a7d9a; }
+
 /* ── Grid ── */
 .grid {
   display: grid;

@@ -32,6 +32,9 @@
         <button class="filter-btn" data-cat="food">Food</button>
         <button class="filter-btn" data-cat="goods">Goods</button>
       </div>
+      <div class="controls-group" style="margin-left:auto">
+        <input class="search-input" id="search" type="search" placeholder="Search textures…" autocomplete="off">
+      </div>
     </div>
     <div id="loading" class="loading-state"><div class="spinner"></div>Loading textures…</div>
     <div class="grid" id="grid"></div>
@@ -46,6 +49,7 @@
     let allTextures = []
     let currentSort = 'newest'
     let currentCat = 'all'
+    let currentSearch = ''
     let sessionIsAdmin = false
 
     let toastTimer = null
@@ -102,6 +106,7 @@
     function render() {
       let list = [...allTextures]
       if (currentCat !== 'all') list = list.filter(t => t.category === currentCat)
+      if (currentSearch) list = list.filter(t => t.title.toLowerCase().includes(currentSearch))
       if (currentSort === 'newest') list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       else list.sort((a, b) => b.download_count - a.download_count)
 
@@ -218,6 +223,15 @@
       if (!document.querySelector('.card')) {
         document.getElementById('empty').style.display = ''
       }
+    })
+
+    let searchTimer = null
+    document.getElementById('search').addEventListener('input', e => {
+      clearTimeout(searchTimer)
+      searchTimer = setTimeout(() => {
+        currentSearch = e.target.value.trim().toLowerCase()
+        render()
+      }, 200)
     })
 
     buildNav().then(loadTextures)
