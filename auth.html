@@ -126,25 +126,13 @@
         return
       }
 
-      const { data, error } = await db.auth.signUp({ email, password })
+      const { data, error } = await db.auth.signUp({
+        email,
+        password,
+        options: { data: { username } }
+      })
       if (error) {
         showMsg(error.message, 'error')
-        btn.disabled = false
-        btn.textContent = 'Create Account'
-        return
-      }
-
-      if (!data.user) {
-        showMsg('Check your email to confirm your account before logging in.', 'error')
-        btn.disabled = false
-        btn.textContent = 'Create Account'
-        return
-      }
-
-      // Insert profile row
-      const { error: profileError } = await db.from('profiles').insert({ id: data.user.id, username })
-      if (profileError) {
-        showMsg('Account created but profile setup failed. Please contact support.', 'error')
         btn.disabled = false
         btn.textContent = 'Create Account'
         return
