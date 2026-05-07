@@ -352,7 +352,12 @@ textarea.form-input { resize: vertical; min-height: 80px; }
   transition: border-color 0.12s;
 }
 
-.upload-area:hover { border-color: #a899e0; }
+.upload-area:hover:not(.upload-locked) { border-color: #a899e0; }
+
+.upload-locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 
 .upload-area p { color: #7a7d9a; font-size: 0.88rem; }
 

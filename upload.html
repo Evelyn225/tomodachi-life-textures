@@ -33,23 +33,24 @@
             <option value="" disabled selected>Select a category</option>
             <option value="face paint">Face Paint</option>
             <option value="food">Food</option>
-            <option value="goods">Goods</option>
+            <option value="treasures">Treasures</option>
           </select>
         </div>
-        <div class="form-group" id="goods-type-group" style="display:none">
-          <label class="form-label" for="goods-type">Goods type</label>
-          <select class="form-select" id="goods-type" onchange="onGoodsTypeChange()">
-            <option value="">Other goods</option>
+        <div class="form-group" id="treasure-type-group" style="display:none">
+          <label class="form-label" for="treasure-type">Treasure type</label>
+          <select class="form-select" id="treasure-type" onchange="onTreasureTypeChange()">
+            <option value="">Other</option>
             <option value="book">Book (185 × 258)</option>
             <option value="game">Game (256 × 144)</option>
+            <option value="pets">Pets (256 × 256)</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label" for="file-input">PNG file</label>
-          <p id="dimension-hint" class="dimension-hint">Select a category to see required dimensions</p>
-          <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()">
+          <p id="dimension-hint" class="dimension-hint">Select a category above first</p>
+          <div class="upload-area upload-locked" id="upload-area">
             <img id="preview" class="upload-preview" style="display:none" alt="preview">
-            <p id="upload-hint">Click or drag a PNG file here</p>
+            <p id="upload-hint">Select a category above to unlock</p>
           </div>
           <input type="file" id="file-input" accept=".png,image/png" style="display:none">
         </div>
@@ -77,31 +78,47 @@
       default: { w: 256, h: 256 }
     }
 
+    function isCategoryReady() {
+      return !!document.getElementById('category').value
+    }
+
     function getExpectedDimensions() {
       const cat = document.getElementById('category').value
-      const goodsType = document.getElementById('goods-type').value
-      if (cat === 'goods' && goodsType === 'book') return DIMENSIONS.book
-      if (cat === 'goods' && goodsType === 'game') return DIMENSIONS.game
+      const type = document.getElementById('treasure-type').value
+      if (cat === 'treasures' && type === 'book') return DIMENSIONS.book
+      if (cat === 'treasures' && type === 'game') return DIMENSIONS.game
       return DIMENSIONS.default
     }
 
     function getDimensionHintText() {
-      const dim = getExpectedDimensions()
       const cat = document.getElementById('category').value
-      if (!cat) return 'Select a category to see required dimensions'
+      if (!cat) return 'Select a category above first'
+      const dim = getExpectedDimensions()
       return `Required: ${dim.w} × ${dim.h} px`
+    }
+
+    function setUploadLocked(locked) {
+      const area = document.getElementById('upload-area')
+      if (locked) {
+        area.classList.add('upload-locked')
+        document.getElementById('upload-hint').textContent = 'Select a category above to unlock'
+        document.getElementById('upload-hint').style.display = ''
+      } else {
+        area.classList.remove('upload-locked')
+        document.getElementById('upload-hint').textContent = 'Click or drag a PNG file here'
+      }
     }
 
     function onCategoryChange() {
       const cat = document.getElementById('category').value
-      const goodsGroup = document.getElementById('goods-type-group')
-      goodsGroup.style.display = cat === 'goods' ? '' : 'none'
-      if (cat !== 'goods') document.getElementById('goods-type').value = ''
+      document.getElementById('treasure-type-group').style.display = cat === 'treasures' ? '' : 'none'
+      if (cat !== 'treasures') document.getElementById('treasure-type').value = ''
       updateDimensionHint()
       clearFileSelection()
+      setUploadLocked(!isCategoryReady())
     }
 
-    function onGoodsTypeChange() {
+    function onTreasureTypeChange() {
       updateDimensionHint()
       clearFileSelection()
     }
@@ -141,11 +158,21 @@
     }
 
     const uploadArea = document.getElementById('upload-area')
-    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.borderColor = '#a899e0' })
+
+    uploadArea.addEventListener('click', () => {
+      if (!isCategoryReady()) return
+      document.getElementById('file-input').click()
+    })
+
+    uploadArea.addEventListener('dragover', e => {
+      e.preventDefault()
+      if (isCategoryReady()) uploadArea.style.borderColor = '#a899e0'
+    })
     uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = '' })
     uploadArea.addEventListener('drop', e => {
       e.preventDefault()
       uploadArea.style.borderColor = ''
+      if (!isCategoryReady()) return
       const file = e.dataTransfer.files[0]
       if (!file) return
       const dt = new DataTransfer()
@@ -204,8 +231,8 @@
 
       const title = document.getElementById('title').value.trim()
       const category = document.getElementById('category').value
-      const goodsType = document.getElementById('goods-type').value
-      const itemType = (category === 'goods' && goodsType) ? goodsType : null
+      const treasureType = document.getElementById('treasure-type').value
+      const itemType = (category === 'treasures' && treasureType) ? treasureType : null
       const textureId = crypto.randomUUID()
       const filePath = `${currentUser.id}/${textureId}.png`
 
@@ -231,8 +258,9 @@
         if (currentPreviewUrl) { URL.revokeObjectURL(currentPreviewUrl); currentPreviewUrl = null }
         document.getElementById('preview').style.display = 'none'
         document.getElementById('upload-hint').style.display = ''
-        document.getElementById('goods-type-group').style.display = 'none'
-        document.getElementById('dimension-hint').textContent = 'Select a category to see required dimensions'
+        document.getElementById('treasure-type-group').style.display = 'none'
+        document.getElementById('dimension-hint').textContent = 'Select a category above first'
+        setUploadLocked(true)
         showMsg('Texture uploaded successfully!', 'success')
         btn.disabled = true
         btn.textContent = 'Upload'

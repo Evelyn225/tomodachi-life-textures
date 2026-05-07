@@ -30,7 +30,7 @@
         <button class="filter-btn active" data-cat="all">All</button>
         <button class="filter-btn" data-cat="face paint">Face Paint</button>
         <button class="filter-btn" data-cat="food">Food</button>
-        <button class="filter-btn" data-cat="goods">Goods</button>
+        <button class="filter-btn" data-cat="treasures">Treasures</button>
       </div>
       <div class="controls-group" style="margin-left:auto">
         <input class="search-input" id="search" type="search" placeholder="Search textures…" autocomplete="off">
@@ -146,7 +146,8 @@
 
     function render() {
       let list = [...allTextures]
-      if (currentCat !== 'all') list = list.filter(t => t.category === currentCat)
+      if (currentCat === 'treasures') list = list.filter(t => t.category === 'treasures' || t.category === 'goods')
+      else if (currentCat !== 'all') list = list.filter(t => t.category === currentCat)
       if (currentSearch) list = list.filter(t => t.title.toLowerCase().includes(currentSearch))
       if (currentSort === 'newest') list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       else list.sort((a, b) => b.download_count - a.download_count)
