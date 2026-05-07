@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — Tomodachi Life Textures</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <a href="index.html" class="brand">Tomodachi Life Textures</a>
+    <nav class="nav">
+      <a href="index.html">Browse</a>
+    </nav>
+  </header>
+
+  <div class="form-page">
+    <div class="form-card">
+      <div class="tabs">
+        <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Login</button>
+        <button class="tab-btn" id="tab-register" onclick="switchTab('register')">Register</button>
+      </div>
+
+      <div id="msg" class="msg"></div>
+
+      <!-- Login form -->
+      <form id="form-login" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" type="email" id="login-email" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" type="password" id="login-password" required autocomplete="current-password">
+        </div>
+        <button class="btn btn-primary btn-full" type="submit" id="login-btn">Login</button>
+      </form>
+
+      <!-- Register form -->
+      <form id="form-register" style="display:none" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input class="form-input" type="text" id="reg-username" required autocomplete="username"
+                 pattern="[a-zA-Z0-9_]{3,20}" title="3-20 characters, letters, numbers, underscores">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" type="email" id="reg-email" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" type="password" id="reg-password" required autocomplete="new-password" minlength="8">
+        </div>
+        <button class="btn btn-primary btn-full" type="submit" id="register-btn">Create Account</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    // Redirect if already logged in
+    db.auth.getSession().then(({ data: { session } }) => {
+      if (session) window.location.href = 'index.html'
+    })
+
+    function switchTab(tab) {
+      document.getElementById('form-login').style.display = tab === 'login' ? '' : 'none'
+      document.getElementById('form-register').style.display = tab === 'register' ? '' : 'none'
+      document.getElementById('tab-login').classList.toggle('active', tab === 'login')
+      document.getElementById('tab-register').classList.toggle('active', tab === 'register')
+      showMsg('', '')
+    }
+
+    function showMsg(text, type) {
+      const el = document.getElementById('msg')
+      el.textContent = text
+      el.className = 'msg' + (type ? ` msg-${type}` : '')
+      el.style.display = text ? '' : 'none'
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault()
+      const btn = document.getElementById('login-btn')
+      btn.disabled = true
+      btn.textContent = 'Logging in...'
+      showMsg('', '')
+
+      const email = document.getElementById('login-email').value.trim()
+      const password = document.getElementById('login-password').value
+
+      const { error } = await db.auth.signInWithPassword({ email, password })
+      if (error) {
+        showMsg(error.message, 'error')
+        btn.disabled = false
+        btn.textContent = 'Login'
+        return
+      }
+      window.location.href = 'index.html'
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault()
+      const btn = document.getElementById('register-btn')
+      btn.disabled = true
+      btn.textContent = 'Creating account...'
+      showMsg('', '')
+
+      const username = document.getElementById('reg-username').value.trim()
+      const email = document.getElementById('reg-email').value.trim()
+      const password = document.getElementById('reg-password').value
+
+      // Check username uniqueness
+      const { data: existing } = await db.from('profiles').select('id').eq('username', username).maybeSingle()
+      if (existing) {
+        showMsg('Username already taken.', 'error')
+        btn.disabled = false
+        btn.textContent = 'Create Account'
+        return
+      }
+
+      const { data, error } = await db.auth.signUp({ email, password })
+      if (error) {
+        showMsg(error.message, 'error')
+        btn.disabled = false
+        btn.textContent = 'Create Account'
+        return
+      }
+
+      // Insert profile row
+      const { error: profileError } = await db.from('profiles').insert({ id: data.user.id, username })
+      if (profileError) {
+        showMsg('Account created but profile setup failed. Please contact support.', 'error')
+        btn.disabled = false
+        btn.textContent = 'Create Account'
+        return
+      }
+
+      window.location.href = 'index.html'
+    }
+  </script>
+</body>
+</html>
