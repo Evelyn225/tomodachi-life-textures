@@ -153,6 +153,7 @@
           <a href="index.html">Browse</a>
           <a href="upload.html">Upload</a>
           <a href="profile.html?user=${encodeURIComponent(username)}">${esc(username)}</a>
+          <a href="help.html">Help</a>
           <button onclick="db.auth.signOut().then(() => window.location.href = 'index.html')">Logout</button>`
 
         // Fetch texture
@@ -168,7 +169,7 @@
 
         render(tex, session.user.id, isAdmin)
       } else {
-        nav.innerHTML = `<a href="auth.html">Login</a>`
+        nav.innerHTML = `<a href="help.html">Help</a><a href="auth.html">Login</a>`
 
         const { data: tex, error } = await db
           .from('textures')
