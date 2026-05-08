@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="Learn how to import custom textures into Tomodachi Life: Living the Dream using TomoTexture.">
+  <title>How to Use Textures — Tomodachi Life Textures</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .help-page {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .help-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #d8dae8;
+      margin-bottom: 8px;
+    }
+
+    .help-subtitle {
+      color: #7a7d9a;
+      font-size: 0.9rem;
+      margin-bottom: 36px;
+    }
+
+    .help-section {
+      margin-bottom: 36px;
+    }
+
+    .help-section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #a899e0;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #282c3a;
+    }
+
+    .help-section p {
+      color: #9092a8;
+      font-size: 0.9rem;
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .step {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      background: rgba(168, 153, 224, 0.15);
+      border: 1px solid rgba(168, 153, 224, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #a899e0;
+      margin-top: 1px;
+    }
+
+    .step-body {
+      flex: 1;
+    }
+
+    .step-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #d8dae8;
+      margin-bottom: 4px;
+    }
+
+    .step-desc {
+      font-size: 0.85rem;
+      color: #7a7d9a;
+      line-height: 1.6;
+    }
+
+    .support-types {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .help-note {
+      background: rgba(168, 153, 224, 0.08);
+      border: 1px solid rgba(168, 153, 224, 0.2);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 0.85rem;
+      color: #9092a8;
+      line-height: 1.6;
+      margin-top: 8px;
+    }
+
+    .help-note strong { color: #a899e0; }
+
+    .gh-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #a899e0;
+      text-decoration: none;
+      font-size: 0.88rem;
+      border: 1px solid rgba(168, 153, 224, 0.3);
+      padding: 8px 16px;
+      border-radius: 20px;
+      margin-top: 4px;
+      transition: background 0.12s, border-color 0.12s;
+    }
+
+    .gh-link:hover {
+      background: rgba(168, 153, 224, 0.1);
+      border-color: #a899e0;
+    }
+
+    .gh-link svg { flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <a href="index.html" class="brand">Tomodachi Life Textures</a>
+    <nav class="nav" id="nav">
+      <a href="index.html">Browse</a>
+      <a href="help.html" style="color:#a899e0">Help</a>
+    </nav>
+  </header>
+
+  <div class="help-page">
+    <div class="help-title">How to use textures in-game</div>
+    <div class="help-subtitle">Using TomoTexture to swap drawings in your save file</div>
+
+    <div class="help-section">
+      <div class="help-section-title">What is TomoTexture?</div>
+      <p>
+        TomoTexture is a free tool by AlfonsoMallozzi that lets you replace the user-generated content (UGC) drawings in your Tomodachi Life: Living the Dream save file with any image you choose — including textures downloaded from this site.
+      </p>
+      <a class="gh-link" href="https://github.com/AlfonsoMallozzi/TomoTexture" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        AlfonsoMallozzi/TomoTexture — Download latest release
+      </a>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">What can be replaced?</div>
+      <div class="support-types">
+        <span class="badge">Face Paint</span>
+        <span class="badge">Food</span>
+        <span class="badge">Treasures (most goods)</span>
+      </div>
+      <p style="margin-top: 12px">Videos cannot be replaced. Each texture type has specific required dimensions — the textures on this site are already the correct size for their category.</p>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">How to replace a texture</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-label">Download TomoTexture</div>
+            <div class="step-desc">Grab the latest release from the GitHub link above and run it.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-label">Download a texture from this site</div>
+            <div class="step-desc">Hit the Download button on any texture. It saves as a PNG to your downloads folder.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-label">Select your save folder</div>
+            <div class="step-desc">Point TomoTexture at the folder where your game save slots are stored. You'll also pick a backup location — TomoTexture saves a copy of your original before making any changes.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-label">Choose what to replace</div>
+            <div class="step-desc">Browse the in-game drawings listed by TomoTexture, pick the one you want to swap out, then select your downloaded PNG.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <div class="step-label">Load the game</div>
+            <div class="step-desc">Your new texture appears in-game. If something looks wrong, TomoTexture can revert to your backed-up original.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">Want to share your own textures?</div>
+      <p>If you've made a texture you're happy with, <a href="auth.html" style="color:#a899e0">create an account</a> and upload it so others can use it too.</p>
+    </div>
+
+    <div class="help-note">
+      <strong>Note:</strong> TomoTexture is a third-party tool not affiliated with this site. For issues with the tool itself, check the <a href="https://github.com/AlfonsoMallozzi/TomoTexture/issues" target="_blank" rel="noopener" style="color:#a899e0">GitHub issues page</a>.
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    function esc(str) {
+      const d = document.createElement('div')
+      d.textContent = str
+      return d.innerHTML
+    }
+
+    async function buildNav() {
+      const { data: { session } } = await db.auth.getSession()
+      const nav = document.getElementById('nav')
+      if (session) {
+        const { data: profile } = await db.from('profiles').select('username').eq('id', session.user.id).single()
+        const username = profile?.username || ''
+        nav.innerHTML = `
+          <a href="index.html">Browse</a>
+          <a href="upload.html">Upload</a>
+          <a href="profile.html?user=${encodeURIComponent(username)}">${esc(username)}</a>
+          <a href="help.html" style="color:#a899e0">Help</a>
+          <button onclick="db.auth.signOut().then(() => window.location.reload())">Logout</button>`
+      } else {
+        nav.innerHTML = `
+          <a href="index.html">Browse</a>
+          <a href="help.html" style="color:#a899e0">Help</a>
+          <a href="auth.html">Login</a>`
+      }
+    }
+
+    buildNav()
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>

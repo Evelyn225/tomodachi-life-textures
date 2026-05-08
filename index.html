@@ -119,13 +119,14 @@
         nav.innerHTML = `
           <a href="upload.html">Upload</a>
           <a href="profile.html?user=${encodeURIComponent(username)}">${esc(username)}</a>
+          <a href="help.html">Help</a>
           <button id="logout-btn">Logout</button>`
         document.getElementById('logout-btn').onclick = async () => {
           await db.auth.signOut()
           window.location.reload()
         }
       } else {
-        nav.innerHTML = `<a href="auth.html">Login</a>`
+        nav.innerHTML = `<a href="help.html">Help</a><a href="auth.html">Login</a>`
       }
     }
 
