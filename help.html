@@ -137,10 +137,7 @@
 <body>
   <header class="header">
     <a href="index.html" class="brand">Tomodachi Life Textures</a>
-    <nav class="nav" id="nav">
-      <a href="index.html">Browse</a>
-      <a href="help.html" style="color:#a899e0">Help</a>
-    </nav>
+    <nav class="nav" id="nav"></nav>
   </header>
 
   <div class="help-page">
@@ -240,12 +237,10 @@
           <a href="index.html">Browse</a>
           <a href="upload.html">Upload</a>
           <a href="profile.html?user=${encodeURIComponent(username)}">${esc(username)}</a>
-          <a href="help.html" style="color:#a899e0">Help</a>
           <button onclick="db.auth.signOut().then(() => window.location.reload())">Logout</button>`
       } else {
         nav.innerHTML = `
           <a href="index.html">Browse</a>
-          <a href="help.html" style="color:#a899e0">Help</a>
           <a href="auth.html">Login</a>`
       }
     }
