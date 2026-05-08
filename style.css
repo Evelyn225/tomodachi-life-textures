@@ -43,6 +43,9 @@ body {
   text-decoration: none;
 }
 
+.bl { display: inline; position: relative; transition: top 0.08s linear, left 0.08s linear; }
+
+
 .nav {
   display: flex;
   align-items: center;
