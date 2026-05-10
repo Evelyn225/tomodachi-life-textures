@@ -4,13 +4,36 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="dark">
-  <meta name="description" content="Browse and download fan-made textures for Tomodachi Life: Living the Dream. Free PNG textures for face paint, food, and goods — uploaded by the community.">
-  <meta property="og:title" content="Tomodachi Life Textures">
-  <meta property="og:description" content="Browse and download fan-made textures for Tomodachi Life: Living the Dream.">
+  <meta name="description" content="Browse and download free fan-made textures for Tomodachi Life: Living the Dream. PNG textures for face paint, food, and goods uploaded by the community.">
+  <meta name="keywords" content="Tomodachi Life Living the Dream textures, Tomodachi Life textures, Living the Dream PNG, face paint textures, food textures, TomoTexture, fan-made textures">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Tomodachi Life: Living the Dream Textures">
+  <meta property="og:description" content="Free fan-made PNG textures for Tomodachi Life: Living the Dream. Face paint, food, and goods uploaded by the community.">
   <meta property="og:url" content="https://tomodachilifetextures.com/">
   <meta property="og:type" content="website">
-  <title>Tomodachi Life Textures</title>
+  <meta property="og:site_name" content="Tomodachi Life Textures">
+  <link rel="canonical" href="https://tomodachilifetextures.com/">
+  <link rel="search" type="application/opensearchdescription+xml" title="Tomodachi Life Textures" href="/opensearch.xml">
+  <title>Tomodachi Life: Living the Dream Textures | Free Fan-Made PNG Downloads</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Tomodachi Life Textures",
+    "alternateName": "Tomodachi Life: Living the Dream Textures",
+    "url": "https://tomodachilifetextures.com/",
+    "description": "Free fan-made PNG textures for Tomodachi Life: Living the Dream. Face paint, food, and goods uploaded by the community.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://tomodachilifetextures.com/?q={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -173,7 +196,7 @@
         const { data: { publicUrl } } = db.storage.from('textures').getPublicUrl(t.file_path)
         const username = t.profiles?.username || 'unknown'
         const count = t.download_count
-        const badgeLabel = t.item_type ? `${t.category} — ${t.item_type}` : t.category
+        const badgeLabel = t.item_type ? `${t.category} / ${t.item_type}` : t.category
         const deleteBtn = sessionIsAdmin
           ? `<button class="btn btn-danger btn-sm del-btn" data-id="${t.id}" data-path="${t.file_path}">Delete</button>`
           : ''
