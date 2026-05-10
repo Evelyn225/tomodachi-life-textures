@@ -5,14 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="dark">
   <meta name="description" content="Download this fan-made texture for Tomodachi Life: Living the Dream. Free PNG ready to import with TomoTexture.">
-  <meta property="og:title" content="Texture — Tomodachi Life Textures">
+  <meta property="og:title" content="Texture | Tomodachi Life Textures">
   <meta property="og:description" content="Download this fan-made texture for Tomodachi Life: Living the Dream.">
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="Tomodachi Life Textures">
   <meta property="og:image" content="">
   <meta property="og:url" content="">
   <link rel="canonical" href="">
-  <title>Texture — Tomodachi Life Textures</title>
+  <meta name="robots" content="index, follow">
+  <link rel="search" type="application/opensearchdescription+xml" title="Tomodachi Life Textures" href="/opensearch.xml">
+  <title>Texture | Tomodachi Life Textures</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="style.css">
   <style>
@@ -197,13 +199,13 @@
     function render(tex, sessionUserId, isAdmin) {
       const { data: { publicUrl } } = db.storage.from('textures').getPublicUrl(tex.file_path)
       const username = tex.profiles?.username || 'unknown'
-      const badgeLabel = tex.item_type ? `${tex.category} — ${tex.item_type}` : tex.category
+      const badgeLabel = tex.item_type ? `${tex.category} / ${tex.item_type}` : tex.category
       const count = tex.download_count
 
       const pageUrl = `https://tomodachilifetextures.com/texture?id=${tex.id}`
-      document.title = `${tex.title} — Tomodachi Life: Living the Dream Textures`
-      document.querySelector('meta[name="description"]').content = `Download "${tex.title}" — a free fan-made ${tex.category} texture for Tomodachi Life: Living the Dream. PNG ready to import with TomoTexture.`
-      document.querySelector('meta[property="og:title"]').content = `${tex.title} — Tomodachi Life Textures`
+      document.title = `${tex.title} | Tomodachi Life: Living the Dream Textures`
+      document.querySelector('meta[name="description"]').content = `Download "${tex.title}", a free fan-made ${tex.category} texture for Tomodachi Life: Living the Dream. PNG ready to import with TomoTexture.`
+      document.querySelector('meta[property="og:title"]').content = `${tex.title} | Tomodachi Life Textures`
       document.querySelector('meta[property="og:description"]').content = `Free fan-made ${tex.category} texture for Tomodachi Life: Living the Dream.`
       document.querySelector('meta[property="og:image"]').content = publicUrl
       document.querySelector('meta[property="og:url"]').content = pageUrl

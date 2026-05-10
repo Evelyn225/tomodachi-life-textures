@@ -7,7 +7,7 @@
   <meta name="description" content="View textures uploaded by this community member for Tomodachi Life: Living the Dream.">
   <meta property="og:type" content="profile">
   <meta property="og:site_name" content="Tomodachi Life Textures">
-  <title>Profile — Tomodachi Life Textures</title>
+  <title>Profile | Tomodachi Life Textures</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -132,7 +132,7 @@
       }
 
       // Update title
-      document.title = `${profile.username} — Tomodachi Life Textures`
+      document.title = `${profile.username} | Tomodachi Life Textures`
 
       // Show profile header
       document.getElementById('profile-username').textContent = profile.username
@@ -190,7 +190,7 @@
       grid.innerHTML = list.map(t => {
         const { data: { publicUrl } } = db.storage.from('textures').getPublicUrl(t.file_path)
         const count = t.download_count
-        const badgeLabel = t.item_type ? `${t.category} — ${t.item_type}` : t.category
+        const badgeLabel = t.item_type ? `${t.category} / ${t.item_type}` : t.category
         const deleteBtn = canDelete
           ? `<button class="btn btn-danger btn-sm del-btn" data-id="${t.id}" data-path="${t.file_path}">Delete</button>`
           : ''
