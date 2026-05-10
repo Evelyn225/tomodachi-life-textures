@@ -73,6 +73,14 @@ body {
 }
 
 /* ── Controls ── */
+.page-heading {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #7a7d9a;
+  padding-top: 24px;
+  letter-spacing: 0.02em;
+}
+
 .controls {
   display: flex;
   flex-wrap: wrap;
