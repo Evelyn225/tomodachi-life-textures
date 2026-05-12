@@ -45,20 +45,26 @@
 
   <div class="container">
     <div class="controls">
-      <div class="controls-group">
-        <span class="controls-label">Sort</span>
-        <button class="sort-btn active" data-sort="newest">Newest</button>
-        <button class="sort-btn" data-sort="popular">Most Downloaded</button>
-      </div>
-      <div class="controls-group">
-        <span class="controls-label">Category</span>
-        <button class="filter-btn active" data-cat="all">All</button>
-        <button class="filter-btn" data-cat="face paint">Face Paint</button>
-        <button class="filter-btn" data-cat="food">Food</button>
-        <button class="filter-btn" data-cat="treasures">Treasures <span style="color:#4a4d66;font-weight:400">(Books, Games, Pets, Music, Other)</span></button>
-      </div>
-      <div class="controls-group" style="margin-left:auto">
+      <div class="controls-row">
+        <div class="controls-group">
+          <span class="controls-label">Category</span>
+          <button class="filter-btn active" data-cat="all">All</button>
+          <button class="filter-btn" data-cat="face paint">Face Paint</button>
+          <button class="filter-btn" data-cat="food">Food</button>
+          <button class="filter-btn" data-cat="treasures" data-type="book">Books</button>
+          <button class="filter-btn" data-cat="treasures" data-type="game">Games</button>
+          <button class="filter-btn" data-cat="treasures" data-type="pets">Pets</button>
+          <button class="filter-btn" data-cat="treasures" data-type="music">Music</button>
+          <button class="filter-btn" data-cat="treasures" data-type="other">Other</button>
+        </div>
         <input class="search-input" id="search" type="search" placeholder="Search textures…" autocomplete="off">
+      </div>
+      <div class="controls-row">
+        <div class="controls-group">
+          <span class="controls-label">Sort</span>
+          <button class="sort-btn active" data-sort="newest">Newest</button>
+          <button class="sort-btn" data-sort="popular">Most Downloaded</button>
+        </div>
       </div>
     </div>
     <div id="loading" class="loading-state"><div class="spinner"></div>Loading textures…</div>
@@ -86,6 +92,7 @@
     let allTextures = []
     let currentSort = 'newest'
     let currentCat = 'all'
+    let currentType = null
     let currentSearch = ''
     let sessionIsAdmin = false
     let visibleCount = 24
@@ -172,8 +179,13 @@
 
     function render() {
       let list = [...allTextures]
-      if (currentCat === 'treasures') list = list.filter(t => t.category === 'treasures' || t.category === 'goods')
-      else if (currentCat !== 'all') list = list.filter(t => t.category === currentCat)
+      if (currentCat === 'treasures') {
+        list = list.filter(t => t.category === 'treasures' || t.category === 'goods')
+        if (currentType === 'other') list = list.filter(t => !t.item_type)
+        else if (currentType) list = list.filter(t => t.item_type === currentType)
+      } else if (currentCat !== 'all') {
+        list = list.filter(t => t.category === currentCat)
+      }
       if (currentSearch) list = list.filter(t => t.title.toLowerCase().includes(currentSearch))
       if (currentSort === 'newest') list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       else list.sort((a, b) => b.download_count - a.download_count)
@@ -278,6 +290,7 @@
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'))
       btn.classList.add('active')
       currentCat = btn.dataset.cat
+      currentType = btn.dataset.type || null
       visibleCount = PAGE_SIZE
       render()
     }))
